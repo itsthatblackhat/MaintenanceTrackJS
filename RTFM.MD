@@ -72,4 +72,4 @@ The application displays notifications for overdue maintenance tasks to ensure t
 
 ## Conclusion
 
-The Maintenance Tracker application provides an efficient way for theater technicians to manage and track maintenance tasks. Its user-friendly interface, combined with robust backend support, ensures that all maintenance activities are monitored and completed on time, reducing the risk of operational disruptions.
+I hope at the end of the day this shit makes your life easier
