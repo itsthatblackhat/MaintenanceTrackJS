@@ -112,6 +112,7 @@ export const updateMaintenanceStatus = async (req, res) => {
             const maintenance = site.maintenances.find(m => m.id === maintenanceId);
             if (maintenance) {
                 maintenance.status = status;
+                maintenance.lastCompleted = status === 'complete' ? new Date().toISOString() : maintenance.lastCompleted;
                 await db.write();
             }
         }

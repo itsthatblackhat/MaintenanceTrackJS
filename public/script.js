@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     hovered: { fill: color, stroke: color, 'stroke-width': 2 },
                     selected: { fill: color, stroke: color, 'stroke-width': 2 }
                 });
-                notifications.push(`${site.name} - Maintenance ${maintenance.id} is overdue!`);
+                notifications.push({ site, maintenance, message: `${site.name} - Maintenance ${maintenance.id} is overdue!` });
             } else if (dueDate > now && (dueDate - now) <= 30 * 24 * 60 * 60 * 1000) { // Upcoming maintenance within 30 days
                 color = 'yellow';
             } else {
@@ -91,8 +91,36 @@ document.addEventListener('DOMContentLoaded', () => {
         notifications.forEach(notification => {
             const div = document.createElement('div');
             div.className = 'notification';
-            div.textContent = notification;
+            div.innerHTML = `${notification.message} &#10060;`; // Red X emoji
+
+            const button = document.createElement('button');
+            button.textContent = 'Job Completed';
+            button.addEventListener('click', () => {
+                completeJob(notification.site.id, notification.maintenance.id);
+            });
+            div.appendChild(button);
+
             notificationContainer.appendChild(div);
+        });
+    }
+
+    function completeJob(siteId, maintenanceId) {
+        // Update the maintenance status to complete
+        fetch('/update-maintenance-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ siteId, maintenanceId, status: 'complete' })
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                // Reload the page to reflect the changes
+                location.reload();
+            } else {
+                console.error('Failed to update the site');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
         });
     }
 });
