@@ -38,10 +38,10 @@
 </form>
 <a href="/manage-sites">Manage Sites</a>
 <div class="color-key">
-    <div><span style="background-color: red;"></span>Overdue</div>
-    <div><span style="background-color: yellow;"></span>Upcoming</div>
-    <div><span style="background-color: green;"></span>Completed</div>
-    <div><span style="background-color: blue;"></span>Not Due</div>
+    <div><span style="background-color: red; border: 1px solid red;"></span> Overdue</div>
+    <div><span style="background-color: yellow; border: 1px solid yellow;"></span> Upcoming</div>
+    <div><span style="background-color: green; border: 1px solid green;"></span> Completed</div>
+    <div><span style="background-color: blue; border: 1px solid blue;"></span> Not Due</div>
 </div>
 <div id="container" style="height: 600px;"></div>
 <div id="notifications"></div>
@@ -57,6 +57,7 @@
             return;
         }
 
+        // Prepare data for the timeline chart
         const rangeData = [];
         const momentData = [];
         const now = new Date();
@@ -66,53 +67,73 @@
             site.maintenances.forEach(maintenance => {
                 const dueDate = new Date(maintenance.dueDate);
                 const lastCompleted = maintenance.lastCompleted ? new Date(maintenance.lastCompleted) : null;
+                const nextDueDate = maintenance.nextDueDate ? new Date(maintenance.nextDueDate) : null;
 
-                let color;
+                // Create range series for each maintenance task
+                let color, strokeColor;
                 if (maintenance.status === 'complete') {
                     color = 'green';
+                    strokeColor = 'green';
                 } else if (dueDate < now) {
                     color = 'red';
-                } else if ((dueDate - now) <= 30 * 24 * 60 * 60 * 1000) { // 30 days
+                    strokeColor = 'red';
+                } else if (dueDate > now && (dueDate - now) <= 30 * 24 * 60 * 60 * 1000) { // Upcoming maintenance within 30 days
                     color = 'yellow';
+                    strokeColor = 'yellow';
                 } else {
                     color = 'blue';
+                    strokeColor = 'blue';
                 }
 
                 rangeData.push({
                     name: `${site.name} - Maintenance ${maintenance.id}`,
                     start: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
                     end: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
-                    normal: { fill: color },
-                    hovered: { fill: color },
-                    selected: { fill: color }
+                    normal: { fill: color, stroke: { color: strokeColor, thickness: 2 } },
+                    hovered: { fill: color, stroke: { color: strokeColor, thickness: 2 } },
+                    selected: { fill: color, stroke: { color: strokeColor, thickness: 2 } }
                 });
 
+                // If maintenance is overdue
                 if (dueDate < now && maintenance.status !== 'complete') {
                     notifications.push(`${site.name} - Maintenance ${maintenance.id} is overdue!`);
+                    // Mark overdue maintenance on the chart
+                    momentData.push({
+                        x: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                        y: `${site.name} - Maintenance ${maintenance.id} Overdue`,
+                        marker: { fill: 'red', size: 10, type: 'circle', stroke: { color: 'red', thickness: 2 } }
+                    });
                 }
 
+                // Add a moment series for the completion date
                 if (lastCompleted) {
                     momentData.push({
                         x: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
-                        y: `${site.name} - Maintenance ${maintenance.id} Completed`
+                        y: `${site.name} - Maintenance ${maintenance.id} Completed`,
+                        marker: { fill: 'green', size: 10, type: 'circle', stroke: { color: 'green', thickness: 2 } }
                     });
                 }
             });
         });
 
+        // Create the chart
         const chart = anychart.timeline();
         const rangeSeries = chart.range(rangeData);
         const momentSeries = chart.moment(momentData);
 
+        // Configure the chart
         chart.container('container');
         chart.draw();
 
+        // Zoom to the current year
         const startOfYear = Date.UTC(now.getFullYear(), 0, 1);
         const endOfYear = Date.UTC(now.getFullYear(), 11, 31);
         chart.zoomTo(startOfYear, endOfYear);
 
+        // Enable zooming in and out
         chart.interactivity().zoomOnMouseWheel(true);
 
+        // Display overdue notifications
         const notificationContainer = document.getElementById('notifications');
         if (notifications.length > 0) {
             notifications.forEach(notification => {
