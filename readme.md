@@ -1,7 +1,7 @@
 
 # Maintenance Tracker Application Documentation
 
-## High-Level Overview
+## Overview
 
 The Maintenance Tracker application is designed to help theater technicians manage and track maintenance tasks across multiple sites. The application provides a visual timeline of maintenance activities, highlights overdue tasks, and allows users to add, update, and delete maintenance records. The application leverages modern web technologies to ensure scalability, reliability, and ease of use.
 
