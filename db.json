@@ -1,0 +1,53 @@
+{
+  "sites": [
+    {
+      "id": "1719537468197",
+      "name": "work site 1",
+      "maintenances": [
+        {
+          "id": "A",
+          "type": "A",
+          "startDate": "2024-01-01T00:00:00.000Z",
+          "dueDate": "2024-05-02T00:00:00.000Z",
+          "status": "todo",
+          "completed": false,
+          "lastCompleted": "2023-11-30T00:00:00.000Z",
+          "nextDueDate": "2024-07-01T00:00:00.000Z"
+        },
+        {
+          "id": "B",
+          "type": "B",
+          "startDate": "2024-01-01T00:00:00.000Z",
+          "dueDate": "2024-08-03T00:00:00.000Z",
+          "status": "todo",
+          "completed": false,
+          "lastCompleted": "2024-06-05T00:00:00.000Z",
+          "nextDueDate": "2024-08-01T00:00:00.000Z"
+        },
+        {
+          "id": "C",
+          "type": "C",
+          "startDate": "2024-01-01T00:00:00.000Z",
+          "dueDate": "2024-09-04T00:00:00.000Z",
+          "status": "todo",
+          "completed": false,
+          "lastCompleted": "2024-05-15T00:00:00.000Z",
+          "nextDueDate": "2024-09-01T00:00:00.000Z"
+        },
+        {
+          "id": "D",
+          "type": "D",
+          "startDate": "2024-01-01T00:00:00.000Z",
+          "dueDate": "2025-01-05T00:00:00.000Z",
+          "status": "todo",
+          "completed": false,
+          "lastCompleted": "2024-04-30T00:00:00.000Z",
+          "nextDueDate": "2025-01-01T00:00:00.000Z"
+        }
+      ],
+      "monthly": false,
+      "quarterly": false,
+      "yearly": false
+    }
+  ]
+}

@@ -11,7 +11,6 @@ const adapter = new JSONFile(file);
 const db = new Low(adapter);
 
 async function initializeDB() {
-    // If the file does not exist, create it and initialize with default data
     if (!fs.existsSync(file)) {
         db.data = { sites: [] };
         await db.write();
@@ -28,6 +27,7 @@ async function initializeDB() {
                 maintenance.dueDate ||= "2024-12-01T00:00:00.000Z";
                 maintenance.completed ||= false;
                 maintenance.lastCompleted ||= null;
+                maintenance.nextDueDate ||= null; // Ensure nextDueDate is initialized
             });
         });
 

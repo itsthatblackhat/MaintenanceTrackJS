@@ -22,16 +22,32 @@ export const getSiteManagement = async (req, res) => {
     }
 };
 
+export const getSiteDetails = async (req, res) => {
+    const { siteId } = req.params;
+    try {
+        await db.read();
+        const site = db.data.sites.find(site => site.id === siteId);
+        if (site) {
+            res.render('site-details', { site });
+        } else {
+            res.status(404).send('Site not found');
+        }
+    } catch (err) {
+        console.error('Error fetching site details:', err);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
 export const addSite = async (req, res) => {
     const { name } = req.body;
     const newSite = {
         id: Date.now().toString(),
         name,
         maintenances: [
-            { id: 'A', type: 'A', startDate: "2024-01-01T00:00:00.000Z", dueDate: "2024-07-01T00:00:00.000Z", status: 'todo', completed: false, lastCompleted: null },
-            { id: 'B', type: 'B', startDate: "2024-01-01T00:00:00.000Z", dueDate: "2024-08-01T00:00:00.000Z", status: 'todo', completed: false, lastCompleted: null },
-            { id: 'C', type: 'C', startDate: "2024-01-01T00:00:00.000Z", dueDate: "2024-09-01T00:00:00.000Z", status: 'todo', completed: false, lastCompleted: null },
-            { id: 'D', type: 'D', startDate: "2024-01-01T00:00:00.000Z", dueDate: "2025-01-01T00:00:00.000Z", status: 'todo', completed: false, lastCompleted: null }
+            { id: 'A', type: 'A', startDate: new Date('2024-01-01'), dueDate: new Date('2024-07-01'), status: 'todo', completed: false, lastCompleted: null, nextDueDate: new Date('2024-07-01') },
+            { id: 'B', type: 'B', startDate: new Date('2024-01-01'), dueDate: new Date('2024-08-01'), status: 'todo', completed: false, lastCompleted: null, nextDueDate: new Date('2024-08-01') },
+            { id: 'C', type: 'C', startDate: new Date('2024-01-01'), dueDate: new Date('2024-09-01'), status: 'todo', completed: false, lastCompleted: null, nextDueDate: new Date('2024-09-01') },
+            { id: 'D', type: 'D', startDate: new Date('2024-01-01'), dueDate: new Date('2025-01-01'), status: 'todo', completed: false, lastCompleted: null, nextDueDate: new Date('2025-01-01') }
         ],
         monthly: false,
         quarterly: false,
@@ -62,20 +78,21 @@ export const deleteSite = async (req, res) => {
 };
 
 export const updateSite = async (req, res) => {
-    const { siteId, aDueDate, bDueDate, cDueDate, dDueDate, aLastCompleted, bLastCompleted, cLastCompleted, dLastCompleted } = req.body;
+    const { siteId, aDueDate, bDueDate, cDueDate, dDueDate, aLastCompleted, bLastCompleted, cLastCompleted, dLastCompleted, aNextDueDate, bNextDueDate, cNextDueDate, dNextDueDate } = req.body;
     try {
         await db.read();
         const site = db.data.sites.find(site => site.id === siteId);
         if (site) {
-            const updateMaintenance = (maintenance, dueDate, lastCompleted) => {
-                maintenance.dueDate = new Date(dueDate).toISOString();
-                maintenance.lastCompleted = lastCompleted ? new Date(lastCompleted).toISOString() : maintenance.lastCompleted;
+            const updateMaintenance = (maintenance, dueDate, lastCompleted, nextDueDate) => {
+                maintenance.dueDate = dueDate ? new Date(dueDate) : maintenance.dueDate;
+                maintenance.lastCompleted = lastCompleted ? new Date(lastCompleted) : maintenance.lastCompleted;
+                maintenance.nextDueDate = nextDueDate ? new Date(nextDueDate) : maintenance.nextDueDate;
             };
 
-            updateMaintenance(site.maintenances.find(m => m.id === 'A'), aDueDate, aLastCompleted);
-            updateMaintenance(site.maintenances.find(m => m.id === 'B'), bDueDate, bLastCompleted);
-            updateMaintenance(site.maintenances.find(m => m.id === 'C'), cDueDate, cLastCompleted);
-            updateMaintenance(site.maintenances.find(m => m.id === 'D'), dDueDate, dLastCompleted);
+            updateMaintenance(site.maintenances.find(m => m.id === 'A'), aDueDate, aLastCompleted, aNextDueDate);
+            updateMaintenance(site.maintenances.find(m => m.id === 'B'), bDueDate, bLastCompleted, bNextDueDate);
+            updateMaintenance(site.maintenances.find(m => m.id === 'C'), cDueDate, cLastCompleted, cNextDueDate);
+            updateMaintenance(site.maintenances.find(m => m.id === 'D'), dDueDate, dLastCompleted, dNextDueDate);
 
             await db.write();
         }

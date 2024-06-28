@@ -1,62 +1,91 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('maintenanceChart').getContext('2d');
-    const sites = JSON.parse(document.getElementById('siteData').textContent);
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const jsonData = document.getElementById('siteData').textContent;
+    let sites;
+    try {
+        sites = JSON.parse(jsonData);
+    } catch (error) {
+        console.error("Error parsing JSON:", error);
+        return;
+    }
 
-    // Create a dataset for each site
-    const datasets = sites.map((site, siteIndex) => {
-        const siteColor = `hsl(${siteIndex * 40}, 70%, 50%)`;
+    // Prepare data for the timeline chart
+    const rangeData = [];
+    const momentData = [];
+    const now = new Date();
+    const notifications = [];
 
-        return site.maintenances.map(maintenance => {
-            const month = new Date(maintenance.dueDate).getMonth();
-            return {
-                label: `${maintenance.type}`,
-                data: [{ x: months[month], y: site.name }],
-                backgroundColor: maintenance.status === 'complete' ? 'green' : siteColor,
-                borderColor: siteColor,
-                borderWidth: 1
-            };
-        });
-    }).flat();
+    sites.forEach(site => {
+        site.maintenances.forEach(maintenance => {
+            const dueDate = new Date(maintenance.dueDate);
+            const lastCompleted = maintenance.lastCompleted ? new Date(maintenance.lastCompleted) : null;
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: months,
-            datasets: datasets
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            scales: {
-                x: { beginAtZero: true },
-                y: {
-                    type: 'category',
-                    labels: sites.map(site => site.name),
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const siteIndex = context.datasetIndex;
-                            const maintenance = datasets[siteIndex];
-                            return `${context.label} - ${maintenance.label}: ${maintenance.status}`;
-                        }
-                    }
-                }
+            // Create range series for each maintenance task
+            let color;
+            if (maintenance.status === 'complete') {
+                color = 'green';
+                rangeData.push({
+                    name: `${site.name} - Maintenance ${maintenance.id} Completed`,
+                    start: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
+                    end: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
+                    normal: { fill: color, stroke: color, 'stroke-width': 2 },
+                    hovered: { fill: color, stroke: color, 'stroke-width': 2 },
+                    selected: { fill: color, stroke: color, 'stroke-width': 2 }
+                });
+            } else if (dueDate < now) {
+                color = 'red';
+                rangeData.push({
+                    name: `${site.name} - Maintenance ${maintenance.id} Overdue`,
+                    start: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                    end: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                    normal: { fill: color, stroke: color, 'stroke-width': 2 },
+                    hovered: { fill: color, stroke: color, 'stroke-width': 2 },
+                    selected: { fill: color, stroke: color, 'stroke-width': 2 }
+                });
+                notifications.push(`${site.name} - Maintenance ${maintenance.id} is overdue!`);
+            } else if (dueDate > now && (dueDate - now) <= 30 * 24 * 60 * 60 * 1000) { // Upcoming maintenance within 30 days
+                color = 'yellow';
+            } else {
+                color = 'blue';
             }
-        }
+
+            // Create range data for each maintenance task
+            rangeData.push({
+                name: `${site.name} - Maintenance ${maintenance.id}`,
+                start: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                end: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                normal: { fill: color, stroke: color, 'stroke-width': 2 },
+                hovered: { fill: color, stroke: color, 'stroke-width': 2 },
+                selected: { fill: color, stroke: color, 'stroke-width': 2 }
+            });
+
+            // Add a moment series for the completion date
+            if (lastCompleted) {
+                momentData.push({
+                    x: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
+                    y: `${site.name} - Maintenance ${maintenance.id} Completed`
+                });
+            }
+        });
     });
 
-    // Display overdue maintenance notifications
-    const now = new Date();
-    const notifications = sites.flatMap(site =>
-        site.maintenances.filter(m => new Date(m.dueDate) < now && m.status !== 'complete')
-            .map(m => `${site.name} - Maintenance ${m.type} is overdue!`)
-    );
+    // Create the chart
+    const chart = anychart.timeline();
+    const rangeSeries = chart.range(rangeData);
+    const momentSeries = chart.moment(momentData);
 
+    // Configure the chart
+    chart.container('container');
+    chart.draw();
+
+    // Zoom to the current year
+    const startOfYear = Date.UTC(now.getFullYear(), 0, 1);
+    const endOfYear = Date.UTC(now.getFullYear(), 11, 31);
+    chart.zoomTo(startOfYear, endOfYear);
+
+    // Enable zooming in and out
+    chart.interactivity().zoomOnMouseWheel(true);
+
+    // Display overdue notifications
     const notificationContainer = document.getElementById('notifications');
     if (notifications.length > 0) {
         notifications.forEach(notification => {

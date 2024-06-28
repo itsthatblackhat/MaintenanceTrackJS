@@ -9,40 +9,9 @@
 <h1>Site Management</h1>
 <a href="/">Back to Main</a>
 <% sites.forEach(site => { %>
-    <h2>
-        <%= site.name %>
-        <form action="/delete-site" method="POST" style="display: inline;">
-            <button type="submit" name="siteId" value="<%= site.id %>">Delete</button>
-        </form>
-    </h2>
-    <form action="/update-site" method="POST">
-        <input type="hidden" name="siteId" value="<%= site.id %>">
-        <div>
-            <label for="a-<%= site.id %>">Maintenance A Due By:</label>
-            <input type="date" id="a-<%= site.id %>" name="aDueDate" value="<%= site.maintenances.find(m => m.id === 'A').dueDate.split('T')[0] %>">
-            <label for="a-completed-<%= site.id %>">Last Completed:</label>
-            <input type="date" id="a-completed-<%= site.id %>" name="aLastCompleted" value="<%= site.maintenances.find(m => m.id === 'A').lastCompleted ? site.maintenances.find(m => m.id === 'A').lastCompleted.split('T')[0] : '' %>">
-        </div>
-        <div>
-            <label for="b-<%= site.id %>">Maintenance B Due By:</label>
-            <input type="date" id="b-<%= site.id %>" name="bDueDate" value="<%= site.maintenances.find(m => m.id === 'B').dueDate.split('T')[0] %>">
-            <label for="b-completed-<%= site.id %>">Last Completed:</label>
-            <input type="date" id="b-completed-<%= site.id %>" name="bLastCompleted" value="<%= site.maintenances.find(m => m.id === 'B').lastCompleted ? site.maintenances.find(m => m.id === 'B').lastCompleted.split('T')[0] : '' %>">
-        </div>
-        <div>
-            <label for="c-<%= site.id %>">Maintenance C Due By:</label>
-            <input type="date" id="c-<%= site.id %>" name="cDueDate" value="<%= site.maintenances.find(m => m.id === 'C').dueDate.split('T')[0] %>">
-            <label for="c-completed-<%= site.id %>">Last Completed:</label>
-            <input type="date" id="c-completed-<%= site.id %>" name="cLastCompleted" value="<%= site.maintenances.find(m => m.id === 'C').lastCompleted ? site.maintenances.find(m => m.id === 'C').lastCompleted.split('T')[0] : '' %>">
-        </div>
-        <div>
-            <label for="d-<%= site.id %>">Maintenance D Due By:</label>
-            <input type="date" id="d-<%= site.id %>" name="dDueDate" value="<%= site.maintenances.find(m => m.id === 'D').dueDate.split('T')[0] %>">
-            <label for="d-completed-<%= site.id %>">Last Completed:</label>
-            <input type="date" id="d-completed-<%= site.id %>" name="dLastCompleted" value="<%= site.maintenances.find(m => m.id === 'D').lastCompleted ? site.maintenances.find(m => m.id === 'D').lastCompleted.split('T')[0] : '' %>">
-        </div>
-        <button type="submit">Save</button>
-    </form>
-<% }); %>
+    <div>
+        <h2><%= site.name %> <form action="/delete-site" method="POST" style="display:inline;"><input type="hidden" name="siteId" value="<%= site.id %>"><button type="submit">Delete</button></form> <a href="/manage-sites/<%= site.id %>">Manage</a></h2>
+    </div>
+<% }) %>
 </body>
 </html>

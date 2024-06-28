@@ -37,7 +37,12 @@
     <button type="submit">Add Site</button>
 </form>
 <a href="/manage-sites">Manage Sites</a>
-<div class="color-key" id="colorKey"></div>
+<div class="color-key">
+    <div><span style="background-color: red;"></span>Overdue</div>
+    <div><span style="background-color: yellow;"></span>Upcoming</div>
+    <div><span style="background-color: green;"></span>Completed</div>
+    <div><span style="background-color: blue;"></span>Not Due</div>
+</div>
 <div id="container" style="height: 600px;"></div>
 <div id="notifications"></div>
 <script id="siteData" type="application/json"><%- JSON.stringify(sites) %></script>
@@ -52,7 +57,6 @@
             return;
         }
 
-        // Prepare data for the timeline chart
         const rangeData = [];
         const momentData = [];
         const now = new Date();
@@ -63,8 +67,17 @@
                 const dueDate = new Date(maintenance.dueDate);
                 const lastCompleted = maintenance.lastCompleted ? new Date(maintenance.lastCompleted) : null;
 
-                // Create range series for each maintenance task
-                const color = maintenance.status === 'complete' ? 'green' : (dueDate < now ? 'red' : 'blue');
+                let color;
+                if (maintenance.status === 'complete') {
+                    color = 'green';
+                } else if (dueDate < now) {
+                    color = 'red';
+                } else if ((dueDate - now) <= 30 * 24 * 60 * 60 * 1000) { // 30 days
+                    color = 'yellow';
+                } else {
+                    color = 'blue';
+                }
+
                 rangeData.push({
                     name: `${site.name} - Maintenance ${maintenance.id}`,
                     start: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
@@ -74,17 +87,10 @@
                     selected: { fill: color }
                 });
 
-                // If maintenance is overdue
                 if (dueDate < now && maintenance.status !== 'complete') {
                     notifications.push(`${site.name} - Maintenance ${maintenance.id} is overdue!`);
-                    // Mark overdue maintenance on the chart
-                    momentData.push({
-                        x: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
-                        y: `${site.name} - Maintenance ${maintenance.id} Overdue`
-                    });
                 }
 
-                // Add a moment series for the completion date
                 if (lastCompleted) {
                     momentData.push({
                         x: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
@@ -94,24 +100,19 @@
             });
         });
 
-        // Create the chart
         const chart = anychart.timeline();
         const rangeSeries = chart.range(rangeData);
         const momentSeries = chart.moment(momentData);
 
-        // Configure the chart
         chart.container('container');
         chart.draw();
 
-        // Zoom to the current year
         const startOfYear = Date.UTC(now.getFullYear(), 0, 1);
         const endOfYear = Date.UTC(now.getFullYear(), 11, 31);
         chart.zoomTo(startOfYear, endOfYear);
 
-        // Enable zooming in and out
         chart.interactivity().zoomOnMouseWheel(true);
 
-        // Display overdue notifications
         const notificationContainer = document.getElementById('notifications');
         if (notifications.length > 0) {
             notifications.forEach(notification => {

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Site: <%= site.name %></title>
+    <script src="https://cdn.anychart.com/releases/8.12.1/js/anychart-base.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.12.1/js/anychart-timeline.min.js"></script>
+</head>
+<body>
+<h1>Manage Site: <%= site.name %></h1>
+<a href="/manage-sites">Back to Site Management</a>
+<form action="/update-site" method="POST">
+    <input type="hidden" name="siteId" value="<%= site.id %>">
+    <% site.maintenances.forEach(maintenance => {
+        const dueDate = maintenance.dueDate ? new Date(maintenance.dueDate) : null;
+        const lastCompleted = maintenance.lastCompleted ? new Date(maintenance.lastCompleted) : null;
+        const nextDueDate = maintenance.nextDueDate ? new Date(maintenance.nextDueDate) : null;
+    %>
+    <div>
+        <label>Maintenance <%= maintenance.id %> Due By:</label>
+        <input type="date" name="<%= maintenance.id.toLowerCase() %>DueDate" value="<%= dueDate ? dueDate.toISOString().split('T')[0] : '' %>">
+        <label>Last Completed:</label>
+        <input type="date" name="<%= maintenance.id.toLowerCase() %>LastCompleted" value="<%= lastCompleted ? lastCompleted.toISOString().split('T')[0] : '' %>">
+        <label>Next <%= maintenance.id %> Maintenance:</label>
+        <input type="date" name="<%= maintenance.id.toLowerCase() %>NextDueDate" value="<%= nextDueDate ? nextDueDate.toISOString().split('T')[0] : '' %>">
+    </div>
+    <% }) %>
+    <button type="submit">Save</button>
+</form>
+<h2>Next Maintenances</h2>
+<ul>
+    <% site.maintenances.forEach(maintenance => {
+        const nextDueDate = maintenance.nextDueDate ? new Date(maintenance.nextDueDate) : null;
+    %>
+    <li>Next <%= maintenance.id %> Maintenance: <%= nextDueDate ? nextDueDate.toISOString().split('T')[0] : 'Not Set' %></li>
+    <% }) %>
+</ul>
+<div id="chartContainer" style="height: 600px;"></div>
+<div id="notifications"></div>
+<script id="siteData" type="application/json"><%- JSON.stringify(site) %></script>
+<script src="/script.js"></script>
+</body>
+</html>

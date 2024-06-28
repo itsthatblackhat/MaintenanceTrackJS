@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getSites, addSite, deleteSite, updateSite, updateMaintenanceStatus, getSiteManagement } from './routes.mjs';
+import { getSites, addSite, deleteSite, updateSite, updateMaintenanceStatus, getSiteManagement, getSiteDetails } from './routes.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,6 +16,7 @@ app.use(express.static('public'));
 
 app.get('/', getSites);
 app.get('/manage-sites', getSiteManagement);
+app.get('/manage-sites/:siteId', getSiteDetails);
 app.post('/add-site', addSite);
 app.post('/delete-site', deleteSite);
 app.post('/update-site', updateSite);
