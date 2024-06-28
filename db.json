@@ -9,9 +9,9 @@
           "type": "A",
           "startDate": "2024-01-01T00:00:00.000Z",
           "dueDate": "2024-05-02T00:00:00.000Z",
-          "status": "todo",
+          "status": "complete",
           "completed": false,
-          "lastCompleted": "2023-11-30T00:00:00.000Z",
+          "lastCompleted": "2024-06-28T13:07:36.495Z",
           "nextDueDate": "2024-07-01T00:00:00.000Z"
         },
         {
@@ -50,57 +50,8 @@
       "yearly": false
     },
     {
-      "id": "1719577275120",
-      "name": "test yo",
-      "maintenances": [
-        {
-          "id": "A",
-          "type": "A",
-          "startDate": "2024-01-01T00:00:00.000Z",
-          "dueDate": "2024-07-01T00:00:00.000Z",
-          "status": "todo",
-          "completed": false,
-          "lastCompleted": null,
-          "nextDueDate": "2024-07-01T00:00:00.000Z"
-        },
-        {
-          "id": "B",
-          "type": "B",
-          "startDate": "2024-01-01T00:00:00.000Z",
-          "dueDate": "2024-08-01T00:00:00.000Z",
-          "status": "todo",
-          "completed": false,
-          "lastCompleted": null,
-          "nextDueDate": "2024-08-01T00:00:00.000Z"
-        },
-        {
-          "id": "C",
-          "type": "C",
-          "startDate": "2024-01-01T00:00:00.000Z",
-          "dueDate": "2024-09-01T00:00:00.000Z",
-          "status": "todo",
-          "completed": false,
-          "lastCompleted": null,
-          "nextDueDate": "2024-09-01T00:00:00.000Z"
-        },
-        {
-          "id": "D",
-          "type": "D",
-          "startDate": "2024-01-01T00:00:00.000Z",
-          "dueDate": "2025-01-01T00:00:00.000Z",
-          "status": "todo",
-          "completed": false,
-          "lastCompleted": null,
-          "nextDueDate": "2025-01-01T00:00:00.000Z"
-        }
-      ],
-      "monthly": false,
-      "quarterly": false,
-      "yearly": false
-    },
-    {
-      "id": "1719577285481",
-      "name": "lol nice",
+      "id": "1719580033186",
+      "name": "Mckinney, TX",
       "maintenances": [
         {
           "id": "A",

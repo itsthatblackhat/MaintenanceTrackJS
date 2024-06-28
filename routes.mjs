@@ -112,13 +112,17 @@ export const updateMaintenanceStatus = async (req, res) => {
             const maintenance = site.maintenances.find(m => m.id === maintenanceId);
             if (maintenance) {
                 maintenance.status = status;
-                maintenance.lastCompleted = status === 'complete' ? new Date().toISOString() : maintenance.lastCompleted;
+                if (status === 'complete') {
+                    maintenance.lastCompleted = new Date().toISOString();
+                }
                 await db.write();
+                res.json({ success: true });
+                return;
             }
         }
-        res.redirect('/');
+        res.json({ success: false });
     } catch (err) {
         console.error('Error updating maintenance status:', err);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ success: false });
     }
 };

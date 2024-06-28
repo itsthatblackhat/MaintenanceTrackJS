@@ -20,7 +20,7 @@ app.get('/manage-sites/:siteId', getSiteDetails);
 app.post('/add-site', addSite);
 app.post('/delete-site', deleteSite);
 app.post('/update-site', updateSite);
-app.post('/update-status', updateMaintenanceStatus);
+app.post('/update-maintenance-status', updateMaintenanceStatus); // Ensure this line matches the endpoint in script.js
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');
