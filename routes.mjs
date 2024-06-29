@@ -113,6 +113,7 @@ export const updateMaintenanceStatus = async (req, res) => {
             if (maintenance) {
                 maintenance.status = status;
                 if (status === 'complete') {
+                    maintenance.completed = true;
                     maintenance.lastCompleted = new Date().toISOString();
                 }
                 await db.write();

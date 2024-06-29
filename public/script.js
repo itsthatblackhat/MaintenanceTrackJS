@@ -23,32 +23,30 @@ document.addEventListener('DOMContentLoaded', () => {
             let color;
             if (maintenance.status === 'complete') {
                 color = 'green';
-                rangeData.push({
-                    name: `${site.name} - Maintenance ${maintenance.id} Completed`,
-                    start: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
-                    end: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
-                    normal: { fill: color, stroke: color, 'stroke-width': 2 },
-                    hovered: { fill: color, stroke: color, 'stroke-width': 2 },
-                    selected: { fill: color, stroke: color, 'stroke-width': 2 }
+                momentData.push({
+                    x: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
+                    y: `${site.name} - Maintenance ${maintenance.id} Completed`,
+                    marker: { fill: 'green', size: 10, type: 'circle', stroke: { color: 'green', thickness: 2 } }
                 });
             } else if (dueDate < now) {
                 color = 'red';
-                rangeData.push({
-                    name: `${site.name} - Maintenance ${maintenance.id} Overdue`,
-                    start: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
-                    end: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
-                    normal: { fill: color, stroke: color, 'stroke-width': 2 },
-                    hovered: { fill: color, stroke: color, 'stroke-width': 2 },
-                    selected: { fill: color, stroke: color, 'stroke-width': 2 }
-                });
                 notifications.push({ site, maintenance, message: `${site.name} - Maintenance ${maintenance.id} is overdue!` });
+                momentData.push({
+                    x: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                    y: `${site.name} - Maintenance ${maintenance.id} Overdue`,
+                    marker: { fill: 'red', size: 10, type: 'circle', stroke: { color: 'red', thickness: 2 } }
+                });
             } else if (dueDate > now && (dueDate - now) <= 30 * 24 * 60 * 60 * 1000) { // Upcoming maintenance within 30 days
                 color = 'yellow';
+                momentData.push({
+                    x: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                    y: `${site.name} - Maintenance ${maintenance.id} Upcoming`,
+                    marker: { fill: 'yellow', size: 10, type: 'circle', stroke: { color: 'yellow', thickness: 2 } }
+                });
             } else {
                 color = 'blue';
             }
 
-            // Create range data for each maintenance task
             rangeData.push({
                 name: `${site.name} - Maintenance ${maintenance.id}`,
                 start: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
@@ -96,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const button = document.createElement('button');
             button.textContent = 'Job Completed';
             button.addEventListener('click', () => {
-                completeJob(notification.site.id, notification.maintenance.id);
+                completeJob(notification.site, notification.maintenance);
             });
             div.appendChild(button);
 
@@ -104,14 +102,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function completeJob(siteId, maintenanceId) {
+    function completeJob(site, maintenance) {
         // Update the maintenance status to complete
-        fetch('/update-maintenance-status', {
+        maintenance.status = 'complete';
+        maintenance.lastCompleted = new Date().toISOString();
+
+        // Update the site data in the database
+        fetch('/update-maintenance-status', { // Ensure this line matches the endpoint in server.mjs
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ siteId, maintenanceId, status: 'complete' })
+            body: JSON.stringify({ siteId: site.id, maintenanceId: maintenance.id, status: 'complete' })
         }).then(response => response.json()).then(data => {
             if (data.success) {
                 // Reload the page to reflect the changes

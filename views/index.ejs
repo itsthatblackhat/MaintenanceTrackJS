@@ -58,6 +58,7 @@
         let sites;
         try {
             sites = JSON.parse(jsonData);
+            console.log("Parsed site data:", sites);
         } catch (error) {
             console.error("Error parsing JSON:", error);
             return;
@@ -75,17 +76,37 @@
                 const lastCompleted = maintenance.lastCompleted ? new Date(maintenance.lastCompleted) : null;
                 const nextDueDate = maintenance.nextDueDate ? new Date(maintenance.nextDueDate) : null;
 
-                // Create range series for each maintenance task
+                console.log("Processing maintenance:", maintenance);
+                console.log("Due date:", dueDate, "Now:", now);
+
+                // Determine color based on status and due date
                 let color, strokeColor;
                 if (maintenance.status === 'complete') {
                     color = 'green';
                     strokeColor = 'green';
+                    momentData.push({
+                        x: Date.UTC(lastCompleted.getFullYear(), lastCompleted.getMonth(), lastCompleted.getDate()),
+                        y: `${site.name} - Maintenance ${maintenance.id} Completed`,
+                        marker: { fill: 'green', size: 10, type: 'circle', stroke: { color: 'green', thickness: 2 } }
+                    });
                 } else if (dueDate < now) {
                     color = 'red';
                     strokeColor = 'red';
-                } else if (dueDate > now && (dueDate - now) <= 30 * 24 * 60 * 60 * 1000) { // Upcoming maintenance within 30 days
+                    notifications.push({ site, maintenance, message: `${site.name} - Maintenance ${maintenance.id} is overdue!` });
+                    momentData.push({
+                        x: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                        y: `${site.name} - Maintenance ${maintenance.id} Overdue`,
+                        marker: { fill: 'red', size: 10, type: 'circle', stroke: { color: 'red', thickness: 2 } }
+                    });
+                } else if (dueDate > now) {
                     color = 'yellow';
                     strokeColor = 'yellow';
+                    momentData.push({
+                        x: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
+                        y: `${site.name} - Maintenance ${maintenance.id} Upcoming`,
+                        marker: { fill: 'yellow', size: 10, type: 'circle', stroke: { color: 'yellow', thickness: 2 } }
+                    });
+                    console.log("Upcoming maintenance detected:", maintenance);
                 } else {
                     color = 'blue';
                     strokeColor = 'blue';
@@ -100,17 +121,6 @@
                     selected: { fill: color, stroke: { color: strokeColor, thickness: 2 } }
                 });
 
-                // If maintenance is overdue
-                if (dueDate < now && maintenance.status !== 'complete') {
-                    notifications.push({ site, maintenance, message: `${site.name} - Maintenance ${maintenance.id} is overdue!` });
-                    // Mark overdue maintenance on the chart
-                    momentData.push({
-                        x: Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()),
-                        y: `${site.name} - Maintenance ${maintenance.id} Overdue`,
-                        marker: { fill: 'red', size: 10, type: 'circle', stroke: { color: 'red', thickness: 2 } }
-                    });
-                }
-
                 // Add a moment series for the completion date
                 if (lastCompleted) {
                     momentData.push({
@@ -121,6 +131,9 @@
                 }
             });
         });
+
+        console.log("Range data prepared:", rangeData);
+        console.log("Moment data prepared:", momentData);
 
         // Create the chart
         const chart = anychart.timeline();
